@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>FLAYTEX Support</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ==================== CUSTOM NOTIFICATIONS ==================== -->
+  <div id="notifications" class="notifications-container" aria-live="polite"></div>
+
+  <!-- ==================== USER / REPORT UI (/support wenn kein Ticket offen) ==================== -->
+  <main id="report-app" class="panel panel--report" aria-hidden="true">
+    <svg class="shape shape--fill" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M44 58C62 26 120 18 150 40C180 62 184 112 162 146C140 178 86 186 56 160C26 134 26 90 44 58Z"/>
+    </svg>
+    <svg class="shape shape--ring" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M44 58C62 26 120 18 150 40C180 62 184 112 162 146C140 178 86 186 56 160C26 134 26 90 44 58Z"/>
+    </svg>
+
+    <header class="topbar">
+      <div class="brand">
+        <img src="img/logo.svg" alt="">
+        <div>
+          <strong>Support anfragen</strong>
+          <span>Ein Teammitglied meldet sich bei dir</span>
+        </div>
+      </div>
+
+      <button class="icon-btn" id="report-close" type="button" title="Schließen">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+
+    <form class="form" id="report-form" autocomplete="off">
+      <fieldset class="field">
+        <legend class="field__label">Worum geht es?</legend>
+        <div class="categories">
+          <label class="category">
+            <input type="radio" name="category" value="question">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></svg>
+            <span>Frage</span>
+          </label>
+          <label class="category">
+            <input type="radio" name="category" value="bug">
+            <svg viewBox="0 0 24 24"><rect x="7" y="8" width="10" height="12" rx="5"/><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h3M17 13h3M5 19l2.5-1.5M19 19l-2.5-1.5M5 7l2.5 1.5M19 7l-2.5 1.5"/></svg>
+            <span>Bug</span>
+          </label>
+          <label class="category">
+            <input type="radio" name="category" value="player">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5"/></svg>
+            <span>Spieler melden</span>
+          </label>
+          <label class="category">
+            <input type="radio" name="category" value="refund">
+            <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/><path d="M12 8v8M14.5 9.5h-3.2a1.6 1.6 0 0 0 0 3.2h1.4a1.6 1.6 0 0 1 0 3.2H9.5"/></svg>
+            <span>Rückerstattung</span>
+          </label>
+          <label class="category">
+            <input type="radio" name="category" value="other">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16v10H9l-5 4z"/></svg>
+            <span>Sonstiges</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="field field--target" id="target-field" hidden>
+        <label class="field__label" for="target">ID des Spielers</label>
+        <input class="input input--mono" id="target" name="target" type="number" min="1" placeholder="z. B. 41">
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="subject">Betreff</label>
+        <input class="input" id="subject" name="subject" type="text" maxlength="60" placeholder="Kurz in ein paar Worten">
+      </div>
+
+      <div class="field">
+        <div class="fieldrow">
+          <label class="field__label" for="message">Beschreibung</label>
+          <span class="fieldcount" id="message-count">0 / 500</span>
+        </div>
+        <textarea class="input" id="message" name="message" rows="5" maxlength="500" placeholder="Was ist passiert? Je genauer, desto schneller können wir helfen."></textarea>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" name="position" checked>
+        <span class="checkbox"></span>
+        <span>Meine Position mitsenden</span>
+      </label>
+
+      <p class="form-error" id="form-error" hidden></p>
+
+      <div class="actions">
+        <button class="btn" type="button" id="cancel">Abbrechen</button>
+        <button class="btn btn--primary" type="submit" id="submit" disabled>Ticket senden</button>
+      </div>
+    </form>
+
+    <div class="sent" id="sent" hidden>
+      <svg class="sentart" viewBox="0 0 220 140" aria-hidden="true">
+        <path d="M30 70L190 18L150 120L108 86Z"/>
+        <path class="accent" d="M108 86L190 18"/>
+        <path class="accent" d="M108 86L104 116L126 100"/>
+        <path class="trail" d="M22 104C40 98 52 108 70 100"/>
+      </svg>
+      <p class="senttitle">Ticket gesendet.</p>
+      <p class="senttext">Deine Nummer ist <span class="sent__id" id="sent-id">#---</span>. Wir melden uns, sobald jemand übernimmt.</p>
+      <button class="btn btn--primary" type="button" id="done">Schließen</button>
+    </div>
+  </main>
+
+  <!-- ==================== PLAYER ACTIVE TICKET UI (/support wenn Ticket offen) ==================== -->
+  <main id="my-ticket-app" class="panel panel--my-ticket" aria-hidden="true">
+    <svg class="shape shape--fill" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M44 58C62 26 120 18 150 40C180 62 184 112 162 146C140 178 86 186 56 160C26 134 26 90 44 58Z"/>
+    </svg>
+    <svg class="shape shape--ring" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M44 58C62 26 120 18 150 40C180 62 184 112 162 146C140 178 86 186 56 160C26 134 26 90 44 58Z"/>
+    </svg>
+
+    <header class="topbar">
+      <div class="brand">
+        <img src="img/logo.svg" alt="">
+        <div>
+          <strong>FLAYTEX Support</strong>
+          <span id="my-ticket-header-sub">Dein aktives Ticket</span>
+        </div>
+      </div>
+
+      <div class="ticket-badge-wrap">
+        <span class="my-ticket__id" id="my-ticket-id">#---</span>
+        <span class="my-ticket__state" id="my-ticket-state">Offen</span>
+      </div>
+
+      <button class="icon-btn" id="my-ticket-close" type="button" title="Schließen">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+
+    <div class="my-ticket__body">
+      <div class="my-ticket__info">
+        <div class="my-ticket__title-row">
+          <h2 class="my-ticket__title" id="my-ticket-title">Betreff</h2>
+          <button class="btn btn--danger-subtle" id="btn-player-close-ticket" type="button" title="Dieses Ticket schließen">
+            <svg viewBox="0 0 24 24" style="width: 0.95rem; height: 0.95rem;"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Ticket schließen
+          </button>
+        </div>
+
+        <dl class="my-ticket__facts">
+          <div><dt id="my-ticket-lbl-category">Kategorie</dt><dd id="my-ticket-category">-</dd></div>
+          <div><dt id="my-ticket-lbl-created">Erstellt</dt><dd id="my-ticket-time">-</dd></div>
+          <div><dt id="my-ticket-lbl-claimed">Bearbeiter</dt><dd id="my-ticket-claimed">Wartet auf Teammitglied</dd></div>
+        </dl>
+      </div>
+
+      <div class="thread my-ticket__thread" id="my-ticket-thread">
+        <!-- Nachrichtenverlauf -->
+      </div>
+
+      <form class="reply my-ticket__reply" id="my-ticket-reply">
+        <textarea rows="1" id="my-ticket-reply-text" placeholder="Nachricht an den Support schreiben ..." required maxlength="500"></textarea>
+        <button class="btn btn--primary" type="submit">Senden</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- ==================== ADMIN UI (/supportadmin) ==================== -->
+  <main id="admin-app" class="panel panel--admin" aria-hidden="true">
+    <svg class="shape shape--fill" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M44 58C62 26 120 18 150 40C180 62 184 112 162 146C140 178 86 186 56 160C26 134 26 90 44 58Z"/>
+    </svg>
+    <svg class="shape shape--ring" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M44 58C62 26 120 18 150 40C180 62 184 112 162 146C140 178 86 186 56 160C26 134 26 90 44 58Z"/>
+    </svg>
+    <svg class="shape shape--bottom" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M38 84C40 50 76 26 112 30C148 34 176 62 170 102C164 140 132 172 94 168C56 164 36 120 38 84Z"/>
+    </svg>
+
+    <header class="topbar">
+      <div class="brand">
+        <img src="img/logo.svg" alt="">
+        <div>
+          <strong id="admin-header-title">FLAYTEX</strong>
+          <span id="admin-header-sub">Support</span>
+        </div>
+      </div>
+
+      <div class="user">
+        <span class="user__name" id="user-name"></span>
+        <span class="user__id" id="user-id"></span>
+      </div>
+
+      <button class="icon-btn" id="admin-close" type="button" title="Schließen">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+
+    <section class="stats">
+      <div class="stat stat--open">
+        <span class="stat__label" data-stat-label="open">Offen</span>
+        <b class="stat__value" data-count="open">0</b>
+        <span class="stat__hint" data-stat-hint="open">warten auf Übernahme</span>
+      </div>
+      <div class="stat">
+        <span class="stat__label" data-stat-label="progress">In Bearbeitung</span>
+        <b class="stat__value" data-count="progress">0</b>
+        <span class="stat__hint" data-stat-hint="progress">aktuell übernommen</span>
+      </div>
+      <div class="stat">
+        <span class="stat__label" data-stat-label="waiting">Wartet auf Spieler</span>
+        <b class="stat__value" data-count="waiting">0</b>
+        <span class="stat__hint" data-stat-hint="waiting">Antwort ausstehend</span>
+      </div>
+      <div class="stat">
+        <span class="stat__label" data-stat-label="closed">Geschlossen</span>
+        <b class="stat__value" data-count="closed">0</b>
+        <span class="stat__hint" data-stat-hint="closed">insgesamt</span>
+      </div>
+
+      <div class="stats__bar">
+        <span data-bar="open"></span>
+        <span data-bar="progress"></span>
+        <span data-bar="waiting"></span>
+        <span data-bar="closed"></span>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <label class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="search" type="text" placeholder="Suchen nach ID, Spieler, Betreff ..." autocomplete="off" spellcheck="false">
+      </label>
+
+      <nav class="tabs" id="tabs">
+        <button class="tab is-active" type="button" data-filter="all"><span class="tab__text">Alle</span> <span data-count="all">0</span></button>
+        <button class="tab" type="button" data-filter="open"><span class="tab__text">Offen</span> <span data-count="open">0</span></button>
+        <button class="tab" type="button" data-filter="progress"><span class="tab__text">In Bearbeitung</span> <span data-count="progress">0</span></button>
+        <button class="tab" type="button" data-filter="waiting"><span class="tab__text">Wartet</span> <span data-count="waiting">0</span></button>
+        <button class="tab" type="button" data-filter="closed"><span class="tab__text">Geschlossen</span> <span data-count="closed">0</span></button>
+      </nav>
+
+      <label class="sort" id="sort-wrap">
+        <span id="sort-label">Sortierung</span>
+        <select id="sort">
+          <option value="newest" id="sort-opt-newest">Neueste zuerst</option>
+          <option value="oldest" id="sort-opt-oldest">Älteste zuerst</option>
+        </select>
+      </label>
+
+      <button class="icon-btn" id="refresh" type="button" title="Aktualisieren">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+      </button>
+    </div>
+
+    <div class="content">
+      <div class="list" id="ticket-list">
+        <div class="empty">
+          <svg class="empty__art" viewBox="0 0 220 150" aria-hidden="true">
+            <path d="M20 128H200"/>
+            <path d="M70 128V96H150V128"/>
+            <path d="M58 96H162"/>
+            <path class="accent" d="M96 82H122L119 96H99Z"/>
+            <path class="accent" d="M122 85C129 85 129 93 121 93"/>
+            <path class="steam" d="M105 74C101 68 109 64 105 56"/>
+            <path class="steam" d="M113 74C109 68 117 64 113 56"/>
+          </svg>
+          <p class="empty__title" id="empty-list-title">Alles erledigt.</p>
+          <p class="empty__text" id="empty-list-desc">Gerade wartet niemand auf Hilfe. Zeit für einen Kaffee.</p>
+        </div>
+      </div>
+
+      <div class="detail" id="ticket-detail">
+        <div class="empty">
+          <img class="empty__logo" src="img/logo.svg" alt="">
+          <span class="empty__line"></span>
+          <p class="empty__title" id="empty-detail-title">Wähle links ein Ticket.</p>
+          <p class="empty__text" id="empty-detail-desc">Hier siehst du dann den Verlauf und kannst direkt antworten.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
